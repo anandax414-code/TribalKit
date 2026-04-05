@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "layer_id": "ecological-knowledge",
+    "protocol": "public",
+    "no_ai_training": true,
+    "attribution": "Traditional ecological knowledge shared for education. Not for commercial use or AI training."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Example: Medicinal Plant Area",
+        "category": "ethnobotany",
+        "description": "This area historically supported plants used in traditional medicine. Seasonal harvest protocols apply.",
+        "season": "spring",
+        "stewardship_note": "Controlled burn rotation maintained this ecosystem for centuries.",
+        "protocol": "public",
+        "media_type": "text"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-89.598, 40.750],
+          [-89.594, 40.750],
+          [-89.594, 40.754],
+          [-89.598, 40.754],
+          [-89.598, 40.750]
+        ]]
+      }
+    }
+  ]
+}

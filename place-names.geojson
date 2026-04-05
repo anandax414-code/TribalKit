@@ -1,0 +1,51 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "layer_id": "place-names",
+    "protocol": "public",
+    "no_ai_training": true,
+    "attribution": "Shared under sovereign authority. Do not use for AI model training."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name_indigenous": "Example Indigenous Name",
+        "name_colonial": "Colonial/Common Name",
+        "meaning": "Translation or meaning of the indigenous name",
+        "language": "Language family",
+        "description": "Description of this place and its significance",
+        "media_type": "text",
+        "protocol": "public",
+        "attributed_to": "Elder Name or Cultural Authority (if disclosed)",
+        "recorded": "2026"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-89.5960, 40.7520]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name_indigenous": "Example Waterway Name",
+        "name_colonial": "Common Waterway Name",
+        "meaning": "Meaning in indigenous language",
+        "language": "Language family",
+        "description": "This waterway has been known by this name since time immemorial.",
+        "media_type": "text",
+        "protocol": "public",
+        "attributed_to": "",
+        "recorded": "2026"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-89.600, 40.750],
+          [-89.595, 40.752],
+          [-89.590, 40.755]
+        ]
+      }
+    }
+  ]
+}

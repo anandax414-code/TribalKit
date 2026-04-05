@@ -1,0 +1,27 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "layer_id": "historical-narratives",
+    "protocol": "public",
+    "no_ai_training": true,
+    "attribution": "Oral history shared with permission. Attribution required."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "title": "Example: The Gathering Place",
+        "narrative": "This location served as a seasonal gathering point where multiple bands would meet for trade, ceremony, and council. The landscape itself was shaped by generations of intentional stewardship.",
+        "era": "pre-contact",
+        "narrator": "Shared by Cultural Committee",
+        "protocol": "public",
+        "media_type": "text",
+        "audio_url": null
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-89.596, 40.753]
+      }
+    }
+  ]
+}

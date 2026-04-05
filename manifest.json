@@ -1,0 +1,135 @@
+{
+  "$schema": "./protocol-schema.json",
+  "sovereignty": {
+    "nation": "YOUR TRIBAL NATION NAME",
+    "governing_body": "Tribal Council / Cultural Committee",
+    "contact": "sovereignty@example.gov",
+    "jurisdiction": "Description of territorial jurisdiction",
+    "treaty_reference": "",
+    "care_principles": true
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2026-04-04",
+    "updated": "2026-04-04",
+    "language_primary": "en",
+    "language_indigenous": ""
+  },
+  "layers": [
+    {
+      "id": "place-names",
+      "name": "Original Place Names",
+      "description": "Indigenous place names for landmarks, waterways, and sacred geography",
+      "protocol": "public",
+      "file": "place-names.geojson",
+      "seasonal": false,
+      "attribution_required": true,
+      "no_ai_training": true,
+      "no_commercial_use": true,
+      "icon": "name",
+      "color": "#4A90D9"
+    },
+    {
+      "id": "ecological-knowledge",
+      "name": "Ecological Stewardship",
+      "description": "Traditional ecological knowledge shared for land stewardship education",
+      "protocol": "public",
+      "file": "ecological.geojson",
+      "seasonal": false,
+      "attribution_required": true,
+      "no_ai_training": true,
+      "no_commercial_use": true,
+      "icon": "leaf",
+      "color": "#6daa45"
+    },
+    {
+      "id": "restricted-cultural",
+      "name": "Cultural Sites",
+      "description": "Sites of cultural significance — approximate locations only",
+      "protocol": "restricted",
+      "file": "cultural-restricted.geojson",
+      "seasonal": false,
+      "attribution_required": true,
+      "no_ai_training": true,
+      "no_commercial_use": true,
+      "requires_acknowledgment": true,
+      "acknowledgment_text": "I acknowledge that this information is shared under the authority of [Nation Name] and I agree not to reproduce, extract, or use it for AI training, commercial purposes, or any use not explicitly authorized.",
+      "icon": "shield",
+      "color": "#d4a017"
+    },
+    {
+      "id": "sacred-sites",
+      "name": "Sacred / Ceremonial",
+      "description": "Sacred sites — warning zones only, no detail disclosed",
+      "protocol": "sacred",
+      "file": null,
+      "seasonal": true,
+      "season_available": null,
+      "attribution_required": true,
+      "no_ai_training": true,
+      "no_commercial_use": true,
+      "warning_only": true,
+      "warning_text": "You are near a site of deep cultural and ceremonial significance. Please be respectful. Do not photograph, record, or disturb this area.",
+      "icon": "sacred",
+      "color": "#8b2500"
+    },
+    {
+      "id": "historical-narratives",
+      "name": "Living History",
+      "description": "Oral history excerpts and narrative waypoints approved for public sharing",
+      "protocol": "public",
+      "file": "history.geojson",
+      "seasonal": false,
+      "attribution_required": true,
+      "no_ai_training": true,
+      "no_commercial_use": false,
+      "icon": "story",
+      "color": "#9B59B6"
+    }
+  ],
+  "permissions": {
+    "default_protocol": "public",
+    "protocols": {
+      "public": {
+        "description": "Viewable by anyone with the AR app. Attribution required. No AI training.",
+        "requires_acknowledgment": false,
+        "extractable": false,
+        "cacheable": true,
+        "cache_duration_hours": 24
+      },
+      "restricted": {
+        "description": "Viewable after acknowledging cultural protocols. Approximate locations only.",
+        "requires_acknowledgment": true,
+        "extractable": false,
+        "cacheable": false,
+        "geofenced": true,
+        "max_precision_meters": 500
+      },
+      "sacred": {
+        "description": "Warning zones only. No content disclosed. Presence-triggered respect notices.",
+        "requires_acknowledgment": false,
+        "extractable": false,
+        "cacheable": false,
+        "warning_only": true,
+        "geofenced": true,
+        "max_precision_meters": 1000
+      },
+      "seasonal": {
+        "description": "Available only during specified cultural seasons. Governed by calendar authority.",
+        "requires_acknowledgment": true,
+        "extractable": false,
+        "cacheable": false,
+        "calendar_authority": "Cultural Committee"
+      }
+    },
+    "global_rules": {
+      "no_ai_training": true,
+      "no_embedding_generation": true,
+      "no_scraping": true,
+      "no_bulk_download": true,
+      "attribution_format": "Content shared under the sovereign authority of {nation}. All rights reserved under tribal law.",
+      "revocable": true,
+      "audit_trail": true
+    }
+  }
+}
