@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Sovereign AR — Viewer</title>
+
+  <!-- ═══ AI TRAINING PROHIBITION ═══ -->
+  <meta name="robots" content="noai, noimageai, noindex">
+  <meta http-equiv="X-Robots-Tag" content="noai, noimageai, noindex">
+  <meta name="ai-training" content="disallow">
+  <meta name="data-sovereignty" content="tribal">
+
+  <!-- A-Frame + AR.js -->
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-bg: #0a0a0f;
+      --color-text: #e8e4dc;
+      --color-text-muted: #a09888;
+      --color-public: #4A90D9;
+      --color-restricted: #d4a017;
+      --color-sacred: #8b2500;
+      --color-seasonal: #9B59B6;
+      --color-ecological: #6daa45;
+      --font-body: 'Source Sans 3', system-ui, sans-serif;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--color-bg);
+      color: var(--color-text);
+      overflow: hidden;
+    }
+
+    /* ── Loading Screen ── */
+    .ar-loading {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: var(--color-bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      transition: opacity 0.5s ease;
+    }
+    .ar-loading.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .ar-loading h1 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .ar-loading p {
+      color: var(--color-text-muted);
+      font-size: 14px;
+      text-align: center;
+      max-width: 280px;
+      line-height: 1.6;
+    }
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-top-color: var(--color-public);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── AR HUD Overlay ── */
+    .ar-hud {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+      pointer-events: none;
+    }
+    .ar-hud > * { pointer-events: auto; }
+
+    .hud-title {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hud-title a {
+      color: var(--color-text);
+      text-decoration: none;
+    }
+
+    .hud-status {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #888;
+    }
+    .status-dot.active { background: var(--color-ecological); }
+    .status-dot.error { background: var(--color-sacred); }
+
+    /* ── Layer Panel ── */
+    .layer-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px;
+      background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 80%, transparent 100%);
+      pointer-events: none;
+    }
+    .layer-panel > * { pointer-events: auto; }
+
+    .layer-toggles {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .layer-toggle {
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.05);
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .layer-toggle:hover {
+      border-color: rgba(255,255,255,0.4);
+    }
+    .layer-toggle.active {
+      background: rgba(255,255,255,0.15);
+      color: var(--color-text);
+    }
+    .layer-toggle.active[data-protocol="public"] { border-color: var(--color-public); color: var(--color-public); }
+    .layer-toggle.active[data-protocol="restricted"] { border-color: var(--color-restricted); color: var(--color-restricted); }
+    .layer-toggle.active[data-protocol="sacred"] { border-color: var(--color-sacred); color: var(--color-sacred); }
+
+    .layer-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .feature-count {
+      font-size: 11px;
+      color: var(--color-text-muted);
+      text-align: center;
+    }
+
+    /* ── Acknowledgment Modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      background: #1a1a22;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      max-width: 400px;
+      width: 100%;
+      padding: 28px 24px;
+      text-align: center;
+    }
+    .modal h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .modal p {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--color-text-muted);
+      margin-bottom: 20px;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .modal-btn {
+      flex: 1;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .modal-btn:hover { opacity: 0.85; }
+    .modal-btn-accept {
+      background: var(--color-restricted);
+      color: #fff;
+    }
+    .modal-btn-decline {
+      background: rgba(255,255,255,0.1);
+      color: var(--color-text);
+    }
+
+    /* ── Feature Info Card ── */
+    .feature-card {
+      position: fixed;
+      bottom: 100px;
+      left: 16px;
+      right: 16px;
+      z-index: 200;
+      background: rgba(20,20,30,0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 16px 20px;
+      max-height: 200px;
+      overflow-y: auto;
+      transform: translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+    .feature-card.visible {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .feature-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .feature-card .feature-protocol {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .feature-card p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--color-text-muted);
+    }
+    .feature-card .feature-attribution {
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
+      margin-top: 8px;
+      font-style: italic;
+    }
+    .feature-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: none;
+      border: none;
+      color: var(--color-text-muted);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+    }
+
+    /* ── Warning Banner (Sacred) ── */
+    .sacred-warning {
+      position: fixed;
+      top: 60px;
+      left: 16px;
+      right: 16px;
+      z-index: 300;
+      background: rgba(139,37,0,0.9);
+      border: 1px solid rgba(255,100,50,0.3);
+      border-radius: 10px;
+      padding: 14px 18px;
+      text-align: center;
+      transform: translateY(-20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.4s ease;
+    }
+    .sacred-warning.visible {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .sacred-warning p {
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    /* ── Demo Mode Banner ── */
+    .demo-banner {
+      position: fixed;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 150;
+      background: rgba(74,144,217,0.15);
+      border: 1px solid rgba(74,144,217,0.3);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 12px;
+      color: var(--color-public);
+      white-space: nowrap;
+    }
+
+    /* Hide A-Frame UI */
+    .a-enter-vr, .a-enter-ar { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div class="ar-loading" id="loading">
+    <div class="loading-spinner"></div>
+    <h1>Sovereign AR</h1>
+    <p>Requesting camera and GPS access to display location-based AR layers under tribal protocol.</p>
+  </div>
+
+  <!-- HUD -->
+  <div class="ar-hud">
+    <div class="hud-title">
+      <a href="index.html">&larr;</a>
+      <span>Sovereign AR</span>
+    </div>
+    <div class="hud-status">
+      <div class="status-dot" id="gps-dot"></div>
+      <span id="gps-status">Waiting for GPS...</span>
+    </div>
+  </div>
+
+  <!-- Demo Mode Banner -->
+  <div class="demo-banner" id="demo-banner" style="display:none;">
+    Demo Mode — Using simulated GPS position
+  </div>
+
+  <!-- Sacred Warning -->
+  <div class="sacred-warning" id="sacred-warning">
+    <p id="sacred-warning-text"></p>
+  </div>
+
+  <!-- Feature Info Card -->
+  <div class="feature-card" id="feature-card">
+    <button class="feature-close" id="feature-close">&times;</button>
+    <h3 id="fc-title"></h3>
+    <div class="feature-protocol" id="fc-protocol"></div>
+    <p id="fc-body"></p>
+    <div class="feature-attribution" id="fc-attribution"></div>
+  </div>
+
+  <!-- Acknowledgment Modal -->
+  <div class="modal-overlay" id="ack-modal">
+    <div class="modal">
+      <h2>Cultural Protocol</h2>
+      <p id="ack-text">Loading...</p>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-decline" id="ack-decline">Decline</button>
+        <button class="modal-btn modal-btn-accept" id="ack-accept">I Acknowledge</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer Panel -->
+  <div class="layer-panel">
+    <div class="layer-toggles" id="layer-toggles"></div>
+    <div class="feature-count" id="feature-count"></div>
+  </div>
+
+  <!-- A-Frame AR Scene -->
+  <a-scene
+    id="ar-scene"
+    vr-mode-ui="enabled: false"
+    arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;"
+    renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true;"
+    style="display: none;"
+  >
+    <a-camera gps-new-camera="gpsMinDistance: 5;" rotation-reader></a-camera>
+  </a-scene>
+
+  <script src="script.js"></script>
+<script data-pplx-inline-edit>
+(function(){
+  if(window===window.top)return;
+  function inlineAll(orig,clone){
+    if(orig.nodeType!==1)return;
+    try{
+      var cs=getComputedStyle(orig);
+      var t='';
+      for(var i=0;i<cs.length;i++){t+=cs[i]+':'+cs.getPropertyValue(cs[i])+';';}
+      clone.style.cssText=t;
+    }catch(e){}
+    var oc=orig.children,cc=clone.children;
+    for(var j=0;j<oc.length&&j<cc.length;j++){inlineAll(oc[j],cc[j]);}
+  }
+  function stripExternal(clone){
+    var imgs=clone.querySelectorAll('img');
+    for(var i=0;i<imgs.length;i++){
+      var s=imgs[i].getAttribute('src');
+      if(s&&!s.startsWith('data:'))imgs[i].removeAttribute('src');
+    }
+    var all=clone.querySelectorAll('*');
+    for(var i=0;i<all.length;i++){
+      var st=all[i].style.cssText;
+      if(st&&st.indexOf('url(')>=0){
+        all[i].style.cssText=st.replace(/url\(["']?(?!data:)[^)"']*["']?\)/gi,'none');
+      }
+    }
+  }
+  window.addEventListener('message',function(e){
+    if(!e.data||e.data.type!=='INLINE_EDIT_CAPTURE_REQUEST')return;
+    var scrollX=window.scrollX||window.pageXOffset||0;
+    var scrollY=window.scrollY||window.pageYOffset||0;
+    var w=window.innerWidth,h=window.innerHeight;
+    try{
+      var clone=document.documentElement.cloneNode(true);
+      var rm=clone.querySelectorAll('script,link[rel="stylesheet"],style');
+      for(var i=0;i<rm.length;i++){rm[i].remove();}
+      inlineAll(document.documentElement,clone);
+      stripExternal(clone);
+      var html=new XMLSerializer().serializeToString(clone);
+      var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'">'
+        +'<foreignObject width="100%" height="100%">'
+        +'<div xmlns="http://www.w3.org/1999/xhtml" style="width:'+w+'px;height:'+h+'px;overflow:hidden">'
+        +'<div style="transform:translate(-'+scrollX+'px,-'+scrollY+'px);transform-origin:top left">'
+        +html+'</div></div></foreignObject></svg>';
+      var svgUrl='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+      var img=new Image();
+      img.onload=function(){
+        var c=document.createElement('canvas');c.width=w;c.height=h;
+        c.getContext('2d').drawImage(img,0,0);
+        window.parent.postMessage({type:'INLINE_EDIT_SCREENSHOT_RESULT',dataUrl:c.toDataURL('image/png'),scrollX:scrollX,scrollY:scrollY},'*');
+      };
+      img.onerror=function(){
+        window.parent.postMessage({type:'INLINE_EDIT_SCREENSHOT_RESULT',dataUrl:null,scrollX:scrollX,scrollY:scrollY},'*');
+      };
+      img.src=svgUrl;
+    }catch(err){
+      window.parent.postMessage({type:'INLINE_EDIT_SCREENSHOT_RESULT',dataUrl:null,scrollX:scrollX,scrollY:scrollY},'*');
+    }
+  });
+})();
+</script></body>
+</html>
